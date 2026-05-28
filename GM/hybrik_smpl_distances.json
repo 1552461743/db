@@ -1,0 +1,40 @@
+{
+    "description": "Mean SMPL/HybrIK pelvis-to-joint distances in meters.",
+    "source_paths": [
+        "/home/nb666/HybrIK/data/data/1/csv_export/synced_dataset.csv",
+        "/home/nb666/HybrIK/data/data/2/csv_export/synced_dataset.csv",
+        "/home/nb666/HybrIK/data/data/3/csv_export/synced_dataset.csv",
+        "/home/nb666/HybrIK/data/data/4/csv_export/synced_dataset.csv",
+        "/home/nb666/HybrIK/data/data/5/csv_export/synced_dataset2.csv",
+        "/home/nb666/HybrIK/data/data/6/csv_export/synced_dataset2.csv",
+        "/home/nb666/HybrIK/data/data/7/csv_export/synced_dataset2.csv",
+        "/home/nb666/HybrIK/data/data/8/csv_export/synced_dataset2.csv",
+        "/home/nb666/HybrIK/data/data/9/csv_export/synced_dataset2.csv"
+    ],
+    "distances": {
+        "jaw": 0.5751901636585429,
+        "left_ankle": 0.8871669046131857,
+        "left_collar": 0.4200568537030546,
+        "left_elbow": 0.40210151127096283,
+        "left_foot": 0.9875820451303161,
+        "left_hip": 0.11515550618867824,
+        "left_knee": 0.4939857969845303,
+        "left_shoulder": 0.4658894042987644,
+        "left_thumb": 0.5120011727353865,
+        "left_wrist": 0.45969205479968045,
+        "neck": 0.5056172786981239,
+        "pelvis": 0.0,
+        "right_ankle": 0.8909110104773178,
+        "right_collar": 0.41702601817365625,
+        "right_elbow": 0.4144064315602109,
+        "right_foot": 0.9943186446531578,
+        "right_hip": 0.11289729053355038,
+        "right_knee": 0.4984747143763028,
+        "right_shoulder": 0.46074169329934966,
+        "right_thumb": 0.5595420278470377,
+        "right_wrist": 0.501127818828189,
+        "spine1": 0.10960423214493378,
+        "spine2": 0.23983485428154178,
+        "spine3": 0.29037733389803877
+    }
+}

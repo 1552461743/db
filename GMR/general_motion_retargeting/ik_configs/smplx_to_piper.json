@@ -1,0 +1,20 @@
+{
+    "robot_root_name": "link1",
+    "human_root_name": "right_shoulder",
+    "ground_height": 0.0,
+    "human_height_assumption": 1.75,
+    "use_ik_match_table1": true,
+    "use_ik_match_table2": true,
+    "human_scale_table": {
+        "right_shoulder": 1.0,
+        "right_wrist": 1.198655
+    },
+    "ik_match_table1": {
+        "link1": ["right_shoulder", 5, 0, [0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]],
+        "link6": ["right_wrist", 250, 0, [0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]]
+    },
+    "ik_match_table2": {
+        "link1": ["right_shoulder", 5, 0, [0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]],
+        "link6": ["right_wrist", 500, 0, [0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]]
+    }
+}

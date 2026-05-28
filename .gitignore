@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+.agents/
+.codex/
+
+ros2/build/
+ros2/install/
+ros2/log/
+
+data/**/csv_export/images/
+data/**/*.db3
+data/**/*.mcap
+*.bag
+*.mp4
+

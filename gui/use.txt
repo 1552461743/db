@@ -1,0 +1,7 @@
+# 启动gui界面控制单个关节
+cd /home/nb666/HybrIK/data/yifu_banshen/gui
+python smpl_joint_pose_gui.py
+
+# 接受关节的变化，然后映射到mujoco里面
+cd /home/nb666/HybrIK/data/yifu_banshen/ros2/kaipu_model
+python3 kaipu_mujoco_udp_player.py

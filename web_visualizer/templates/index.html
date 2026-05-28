@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.py 传感器数据可视化</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1>2.py 传感器数据可视化</h1>
+        <div class="subtitle">仿照参考页面风格，适配 8 路 IMU + 10 路电容原始组发布数据</div>
+      </div>
+      <div id="status" class="status disconnected">
+        <span class="status-dot"></span>
+        <span>连接中...</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="card">
+        <div class="card-title">2.py 发布的话题</div>
+        <div class="topic-grid">
+          <div class="topic-item"><span class="mono">/sensor/capacitance</span><span>10 路电容</span></div>
+          <div class="topic-item"><span class="mono">/sensor/acceleration_raw</span><span>8 x 3 加速度</span></div>
+          <div class="topic-item"><span class="mono">/sensor/gyroscope_raw</span><span>8 x 3 角速度</span></div>
+          <div class="topic-item"><span class="mono">/sensor/magnetic_raw</span><span>8 x 3 磁场</span></div>
+          <div class="topic-item"><span class="mono">/imu/channel_0 ~ 7</span><span>逐通道 IMU</span></div>
+        </div>
+      </div>
+
+      <div class="card main-view-switch">
+        <div class="card-title">选择查看内容</div>
+        <div class="main-view-btn-group">
+          <button class="btn main-view-btn active" data-main-view="imu" type="button">查看 IMU</button>
+          <button class="btn main-view-btn" data-main-view="cap" type="button">查看电容</button>
+        </div>
+        <div class="small-text">页面只负责显示，数据源来自 ROS2 话题。</div>
+      </div>
+    </div>
+
+    <section id="imuSection" class="main-section" aria-label="IMU 视图">
+      <div class="controls">
+        <div class="card">
+          <div class="card-title">选择 IMU 通道</div>
+          <div class="btn-group" id="imuChannelButtons">
+            {% for i in range(imu_channels) %}
+            <button class="btn {% if i == 0 %}active{% endif %}" data-imu-channel="{{ i }}">IMU {{ i }}</button>
+            {% endfor %}
+          </div>
+
+          <div class="btn-group mode-switch">
+            <button class="btn secondary active" data-imu-mode="raw" type="button">原始 ACC / GYRO</button>
+            <button class="btn secondary" data-imu-mode="mag" type="button">原始 MAG</button>
+          </div>
+
+          <div class="small-text">切换通道或模式会清空对应历史曲线，等待新一轮组数据。</div>
+        </div>
+      </div>
+
+      <div class="charts-container">
+        <div class="chart-container accel" id="accelPanel">
+          <div class="chart-title" id="accelTitle">IMU 0 原始加速度</div>
+          <canvas id="chartAccel"></canvas>
+          <div class="data-stats">
+            <div class="stat-item"><div class="stat-label">X</div><div class="stat-value" id="accel-x">--</div></div>
+            <div class="stat-item"><div class="stat-label">Y</div><div class="stat-value" id="accel-y">--</div></div>
+            <div class="stat-item"><div class="stat-label">Z</div><div class="stat-value" id="accel-z">--</div></div>
+          </div>
+        </div>
+
+        <div class="chart-container gyro" id="gyroPanel">
+          <div class="chart-title" id="gyroTitle">IMU 0 原始角速度</div>
+          <canvas id="chartGyro"></canvas>
+          <div class="data-stats">
+            <div class="stat-item"><div class="stat-label">X</div><div class="stat-value" id="gyro-x">--</div></div>
+            <div class="stat-item"><div class="stat-label">Y</div><div class="stat-value" id="gyro-y">--</div></div>
+            <div class="stat-item"><div class="stat-label">Z</div><div class="stat-value" id="gyro-z">--</div></div>
+          </div>
+        </div>
+
+        <div class="chart-container mag hidden" id="magPanel">
+          <div class="chart-title" id="magTitle">IMU 0 原始磁场</div>
+          <canvas id="chartMag"></canvas>
+          <div class="data-stats">
+            <div class="stat-item"><div class="stat-label">X</div><div class="stat-value" id="mag-x">--</div></div>
+            <div class="stat-item"><div class="stat-label">Y</div><div class="stat-value" id="mag-y">--</div></div>
+            <div class="stat-item"><div class="stat-label">Z</div><div class="stat-value" id="mag-z">--</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">8 路 IMU 最新值总览</div>
+        <div class="table-wrap">
+          <table class="data-table" aria-label="8路IMU最新值表格">
+            <thead>
+              <tr>
+                <th>IMU</th>
+                <th>ACC X</th>
+                <th>ACC Y</th>
+                <th>ACC Z</th>
+                <th>GYRO X</th>
+                <th>GYRO Y</th>
+                <th>GYRO Z</th>
+                <th>MAG X</th>
+                <th>MAG Y</th>
+                <th>MAG Z</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for i in range(imu_channels) %}
+              <tr>
+                <td class="mono">{{ i }}</td>
+                <td class="mono" id="imu-{{ i }}-acc-x">--</td>
+                <td class="mono" id="imu-{{ i }}-acc-y">--</td>
+                <td class="mono" id="imu-{{ i }}-acc-z">--</td>
+                <td class="mono" id="imu-{{ i }}-gyro-x">--</td>
+                <td class="mono" id="imu-{{ i }}-gyro-y">--</td>
+                <td class="mono" id="imu-{{ i }}-gyro-z">--</td>
+                <td class="mono" id="imu-{{ i }}-mag-x">--</td>
+                <td class="mono" id="imu-{{ i }}-mag-y">--</td>
+                <td class="mono" id="imu-{{ i }}-mag-z">--</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="capSection" class="main-section hidden" aria-label="电容视图">
+      <div class="charts-container single-column">
+        <div class="chart-container capacitance">
+          <div class="chart-title">10 路电容数据 /sensor/capacitance</div>
+          <canvas id="chartCapacitance"></canvas>
+
+          <div class="cap-panel">
+            <div class="cap-meta">
+              <div>
+                <div class="cap-meta-title">最新值</div>
+                <div class="small-text">最后更新: <span id="capLastUpdate">-</span></div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="data-table" aria-label="10路电容最新值表格">
+                <thead>
+                  <tr>
+                    <th>通道</th>
+                    <th>最新值</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for i in range(cap_channels) %}
+                  <tr>
+                    <td class="mono">{{ i }}</td>
+                    <td class="mono" id="cap-val-{{ i }}">--</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
